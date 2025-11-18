@@ -1,144 +1,213 @@
 import { Devvit } from '@devvit/public-api';
 import { Asset, Interval, PriceFeed, LeaderboardRow } from './types.js';
 import { chartImageUrl } from './chart.js';
-import { getMenuLinks } from './menus.js';
+import { LINKS } from './menus.js';
 
 /**
- * Render the main price tracker card
+ * Render the main price tracker card using Devvit Blocks API
  */
 export function renderPriceCard(
   context: Devvit.Context,
   feed: PriceFeed,
   symbol: Asset,
   interval: Interval
-): JSX.Element {
+): any {
   const pct = ((feed.last - feed.prevClose) / feed.prevClose) * 100;
   const isPositive = pct >= 0;
-  const symbolLabel = symbol === 'XAGUSD' ? '🥈 Silver' : '🥇 Gold';
+  const symbolLabel = symbol === 'XAGUSD' ? 'Silver (XAGUSD)' : 'Gold (XAUUSD)';
 
-  // Get menu links with settings
-  const discord = context.settings.get<string>('links_discord');
-  const x = context.settings.get<string>('links_x');
-  const youtube = context.settings.get<string>('links_youtube');
-  const menuLinks = getMenuLinks({ discord, x, youtube });
+  // Build timeframe buttons
+  const timeframes: Interval[] = ['1m', '5m', '15m', '30m', '1h', '4h', 'D', 'W'];
 
-  return (
-    <vstack padding="medium" gap="medium" backgroundColor="#1a1a1a" cornerRadius="medium">
-      {/* Header: Symbol and Current Price */}
-      <hstack alignment="space-between middle" gap="medium">
-        <vstack gap="none" grow>
-          <text size="xlarge" weight="bold" color="#ffffff">
-            {symbolLabel}
-          </text>
-          <text size="xxlarge" weight="bold" color="#ffffff">
-            ${feed.last.toFixed(2)}
-          </text>
-        </vstack>
+  return {
+    type: 'vstack',
+    padding: 'medium',
+    gap: 'medium',
+    backgroundColor: '#1a1a1a',
+    cornerRadius: 'medium',
+    children: [
+      // Header: Symbol and Price
+      {
+        type: 'hstack',
+        alignment: 'space-between',
+        gap: 'medium',
+        children: [
+          {
+            type: 'vstack',
+            gap: 'none',
+            grow: true,
+            children: [
+              {
+                type: 'text',
+                text: symbolLabel,
+                size: 'xlarge',
+                weight: 'bold',
+                color: '#ffffff',
+              },
+              {
+                type: 'text',
+                text: `$${feed.last.toFixed(2)}`,
+                size: 'xxlarge',
+                weight: 'bold',
+                color: '#ffffff',
+              },
+            ],
+          },
+          {
+            type: 'vstack',
+            alignment: 'end',
+            gap: 'none',
+            children: [
+              {
+                type: 'text',
+                text: `${isPositive ? '+' : ''}${pct.toFixed(2)}%`,
+                size: 'large',
+                weight: 'bold',
+                color: isPositive ? '#26a69a' : '#ef5350',
+              },
+              {
+                type: 'text',
+                text: interval,
+                size: 'small',
+                color: '#888888',
+              },
+            ],
+          },
+        ],
+      },
 
-        <vstack alignment="end" gap="none">
-          <text
-            size="large"
-            weight="bold"
-            color={isPositive ? '#26a69a' : '#ef5350'}
-          >
-            {isPositive ? '+' : ''}
-            {pct.toFixed(2)}%
-          </text>
-          <text size="small" color="#888888">
-            {interval}
-          </text>
-        </vstack>
-      </hstack>
+      // Chart Image
+      {
+        type: 'image',
+        url: chartImageUrl(feed.candles, `${symbolLabel} (${interval})`, 1000, 600),
+        description: `${symbolLabel} price chart`,
+        imageHeight: 256,
+        imageWidth: 512,
+        resizeMode: 'fit',
+      },
 
-      {/* Chart Image */}
-      <image
-        url={chartImageUrl(feed.candles, `${symbolLabel} (${interval})`, 1000, 600)}
-        description={`${symbolLabel} price chart`}
-        imageHeight={300}
-        imageWidth={500}
-        resizeMode="fit"
-      />
+      // Timeframe Selector
+      {
+        type: 'hstack',
+        gap: 'small',
+        alignment: 'center',
+        children: timeframes.map((tf) => ({
+          type: 'button',
+          text: tf,
+          appearance: tf === interval ? 'primary' : 'secondary',
+          size: 'small',
+          onPress: async () => {
+            context.ui.navigateTo(`/asset/${symbol}/${tf}`);
+          },
+        })),
+      },
 
-      {/* Timeframe Selector */}
-      <hstack gap="small" alignment="center">
-        {(['1m', '5m', '15m', '30m', '1h', '4h', 'D', 'W'] as Interval[]).map(
-          (tf) => (
-            <button
-              key={tf}
-              appearance={tf === interval ? 'primary' : 'secondary'}
-              size="small"
-              onPress={() => {
-                context.ui.navigateTo(`/asset/${symbol}/${tf}`);
-              }}
-            >
-              {tf}
-            </button>
-          )
-        )}
-      </hstack>
+      // Asset Selector
+      {
+        type: 'hstack',
+        gap: 'small',
+        alignment: 'center',
+        children: [
+          {
+            type: 'button',
+            text: 'Silver',
+            appearance: symbol === 'XAGUSD' ? 'primary' : 'secondary',
+            grow: true,
+            onPress: async () => {
+              context.ui.navigateTo(`/asset/XAGUSD/${interval}`);
+            },
+          },
+          {
+            type: 'button',
+            text: 'Gold',
+            appearance: symbol === 'XAUUSD' ? 'primary' : 'secondary',
+            grow: true,
+            onPress: async () => {
+              context.ui.navigateTo(`/asset/XAUUSD/${interval}`);
+            },
+          },
+        ],
+      },
 
-      {/* Asset Selector */}
-      <hstack gap="small" alignment="center">
-        <button
-          appearance={symbol === 'XAGUSD' ? 'primary' : 'secondary'}
-          onPress={() => {
-            context.ui.navigateTo(`/asset/XAGUSD/${interval}`);
-          }}
-          grow
-        >
-          🥈 Silver
-        </button>
-        <button
-          appearance={symbol === 'XAUUSD' ? 'primary' : 'secondary'}
-          onPress={() => {
-            context.ui.navigateTo(`/asset/XAUUSD/${interval}`);
-          }}
-          grow
-        >
-          🥇 Gold
-        </button>
-      </hstack>
+      // Quick Links Section
+      {
+        type: 'vstack',
+        gap: 'small',
+        children: [
+          {
+            type: 'text',
+            text: 'Quick Links',
+            size: 'medium',
+            weight: 'bold',
+            color: '#ffffff',
+          },
+          {
+            type: 'hstack',
+            gap: 'small',
+            alignment: 'start',
+            children: [
+              {
+                type: 'button',
+                text: 'Home',
+                size: 'small',
+                appearance: 'bordered',
+                onPress: async () => {
+                  context.ui.navigateTo('https://reddit.com/r/WallStreetSilver/');
+                },
+              },
+              {
+                type: 'button',
+                text: 'Discord',
+                size: 'small',
+                appearance: 'bordered',
+                onPress: async () => {
+                  context.ui.navigateTo('https://discord.gg/wallstreetsilver');
+                },
+              },
+              {
+                type: 'button',
+                text: 'X',
+                size: 'small',
+                appearance: 'bordered',
+                onPress: async () => {
+                  context.ui.navigateTo('https://x.com/wallstreetsilv');
+                },
+              },
+              {
+                type: 'button',
+                text: 'YouTube',
+                size: 'small',
+                appearance: 'bordered',
+                onPress: async () => {
+                  context.ui.navigateTo('https://youtube.com/@wallstreetsilver');
+                },
+              },
+            ],
+          },
+        ],
+      },
 
-      {/* Navigation Menu */}
-      <vstack gap="small">
-        <text size="medium" weight="bold" color="#ffffff">
-          Quick Links
-        </text>
-        <hstack gap="small" alignment="center" wrap>
-          {menuLinks.map((link, index) => (
-            <button
-              key={`${link.label}-${index}`}
-              icon={link.icon as Devvit.Blocks.IconName}
-              size="small"
-              onPress={() => {
-                context.ui.navigateTo(link.url);
-              }}
-            >
-              {link.label}
-            </button>
-          ))}
-        </hstack>
-      </vstack>
+      // Leaderboard Link
+      {
+        type: 'button',
+        text: 'View Daily Leaderboard',
+        appearance: 'bordered',
+        grow: true,
+        onPress: async () => {
+          context.ui.navigateTo('/leaderboard');
+        },
+      },
 
-      {/* Leaderboard Link */}
-      <hstack gap="small" alignment="center">
-        <button
-          appearance="bordered"
-          onPress={() => {
-            context.ui.navigateTo('/leaderboard');
-          }}
-          grow
-        >
-          📊 View Leaderboard
-        </button>
-      </hstack>
-
-      {/* Footer */}
-      <text size="xsmall" color="#666666" alignment="center">
-        Updates every {getUpdateFrequency(interval)} • Powered by WallStreetSilver
-      </text>
-    </vstack>
-  );
+      // Footer
+      {
+        type: 'text',
+        text: `Updates every ${getUpdateFrequency(interval)} • Powered by WallStreetSilver`,
+        size: 'xsmall',
+        color: '#666666',
+        alignment: 'center',
+      },
+    ],
+  };
 }
 
 /**
@@ -147,136 +216,220 @@ export function renderPriceCard(
 export function renderLeaderboard(
   context: Devvit.Context,
   rows: LeaderboardRow[]
-): JSX.Element {
-  return (
-    <vstack padding="medium" gap="medium" backgroundColor="#1a1a1a" cornerRadius="medium">
-      {/* Header */}
-      <hstack alignment="space-between middle">
-        <text size="xlarge" weight="bold" color="#ffffff">
-          📊 Today's Leaderboard
-        </text>
-        <button
-          size="small"
-          onPress={() => {
-            context.ui.navigateTo('/');
-          }}
-        >
-          ← Back
-        </button>
-      </hstack>
+): any {
+  return {
+    type: 'vstack',
+    padding: 'medium',
+    gap: 'medium',
+    backgroundColor: '#1a1a1a',
+    cornerRadius: 'medium',
+    children: [
+      // Header
+      {
+        type: 'hstack',
+        alignment: 'space-between',
+        children: [
+          {
+            type: 'text',
+            text: 'Today\'s Leaderboard',
+            size: 'xlarge',
+            weight: 'bold',
+            color: '#ffffff',
+          },
+          {
+            type: 'button',
+            text: 'Back',
+            size: 'small',
+            onPress: async () => {
+              context.ui.navigateTo('/');
+            },
+          },
+        ],
+      },
 
-      <text size="small" color="#888888">
-        Top commenters by karma (UTC day)
-      </text>
+      {
+        type: 'text',
+        text: 'Top commenters by karma (UTC day)',
+        size: 'small',
+        color: '#888888',
+      },
 
-      {/* Leaderboard Table */}
-      {rows.length === 0 ? (
-        <vstack padding="large" alignment="center middle">
-          <text size="medium" color="#888888">
-            No activity yet today. Be the first to comment!
-          </text>
-        </vstack>
-      ) : (
-        <vstack gap="small">
-          {rows.map((row, index) => (
-            <hstack
-              key={`${row.user}-${index}`}
-              padding="small"
-              gap="medium"
-              alignment="space-between middle"
-              backgroundColor={index < 3 ? '#2a2a2a' : '#1f1f1f'}
-              cornerRadius="small"
-            >
-              <hstack gap="medium" alignment="start middle" grow>
-                <text
-                  size="large"
-                  weight="bold"
-                  color={
-                    index === 0
-                      ? '#ffd700'
-                      : index === 1
-                      ? '#c0c0c0'
-                      : index === 2
-                      ? '#cd7f32'
-                      : '#ffffff'
-                  }
-                  minWidth="32px"
-                >
-                  #{index + 1}
-                </text>
-                <text size="medium" weight="bold" color="#ffffff">
-                  u/{row.user}
-                </text>
-              </hstack>
+      // Leaderboard entries
+      ...(rows.length === 0
+        ? [
+            {
+              type: 'vstack' as const,
+              padding: 'large' as const,
+              alignment: 'center middle' as const,
+              children: [
+                {
+                  type: 'text' as const,
+                  text: 'No activity yet today. Be the first to comment!',
+                  size: 'medium' as const,
+                  color: '#888888',
+                },
+              ],
+            },
+          ]
+        : rows.map((row, index) => ({
+            type: 'hstack' as const,
+            padding: 'small' as const,
+            gap: 'medium' as const,
+            alignment: 'space-between' as const,
+            backgroundColor: index < 3 ? '#2a2a2a' : '#1f1f1f',
+            cornerRadius: 'small' as const,
+            children: [
+              {
+                type: 'hstack' as const,
+                gap: 'medium' as const,
+                alignment: 'start middle' as const,
+                grow: true,
+                children: [
+                  {
+                    type: 'text' as const,
+                    text: `#${index + 1}`,
+                    size: 'large' as const,
+                    weight: 'bold' as const,
+                    color:
+                      index === 0
+                        ? '#ffd700'
+                        : index === 1
+                        ? '#c0c0c0'
+                        : index === 2
+                        ? '#cd7f32'
+                        : '#ffffff',
+                  },
+                  {
+                    type: 'text' as const,
+                    text: `u/${row.user}`,
+                    size: 'medium' as const,
+                    weight: 'bold' as const,
+                    color: '#ffffff',
+                  },
+                ],
+              },
+              {
+                type: 'hstack' as const,
+                gap: 'large' as const,
+                alignment: 'end middle' as const,
+                children: [
+                  {
+                    type: 'vstack' as const,
+                    alignment: 'end' as const,
+                    gap: 'none' as const,
+                    children: [
+                      {
+                        type: 'text' as const,
+                        text: 'Comments',
+                        size: 'small' as const,
+                        color: '#888888',
+                      },
+                      {
+                        type: 'text' as const,
+                        text: row.comments.toString(),
+                        size: 'medium' as const,
+                        weight: 'bold' as const,
+                        color: '#26a69a',
+                      },
+                    ],
+                  },
+                  {
+                    type: 'vstack' as const,
+                    alignment: 'end' as const,
+                    gap: 'none' as const,
+                    children: [
+                      {
+                        type: 'text' as const,
+                        text: 'Karma',
+                        size: 'small' as const,
+                        color: '#888888',
+                      },
+                      {
+                        type: 'text' as const,
+                        text: row.karma.toString(),
+                        size: 'medium' as const,
+                        weight: 'bold' as const,
+                        color: '#ffd700',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          }))),
 
-              <hstack gap="large" alignment="end middle">
-                <vstack alignment="end" gap="none">
-                  <text size="small" color="#888888">
-                    Comments
-                  </text>
-                  <text size="medium" weight="bold" color="#26a69a">
-                    {row.comments}
-                  </text>
-                </vstack>
-                <vstack alignment="end" gap="none">
-                  <text size="small" color="#888888">
-                    Karma
-                  </text>
-                  <text size="medium" weight="bold" color="#ffd700">
-                    {row.karma}
-                  </text>
-                </vstack>
-              </hstack>
-            </hstack>
-          ))}
-        </vstack>
-      )}
-
-      {/* Footer */}
-      <text size="xsmall" color="#666666" alignment="center">
-        Leaderboard updates every 5 minutes • Daily reset at midnight UTC
-      </text>
-    </vstack>
-  );
+      // Footer
+      {
+        type: 'text',
+        text: 'Leaderboard updates every 5 minutes • Daily reset at midnight UTC',
+        size: 'xsmall',
+        color: '#666666',
+        alignment: 'center',
+      },
+    ],
+  };
 }
 
 /**
  * Render error state
  */
-export function renderError(context: Devvit.Context, error: string): JSX.Element {
-  return (
-    <vstack padding="large" gap="medium" alignment="center middle" backgroundColor="#1a1a1a">
-      <text size="xlarge" color="#ef5350">
-        ⚠️ Error
-      </text>
-      <text size="medium" color="#ffffff" alignment="center">
-        {error}
-      </text>
-      <button
-        onPress={() => {
+export function renderError(context: Devvit.Context, error: string): any {
+  return {
+    type: 'vstack',
+    padding: 'large',
+    gap: 'medium',
+    alignment: 'center middle',
+    backgroundColor: '#1a1a1a',
+    children: [
+      {
+        type: 'text',
+        text: 'Error',
+        size: 'xlarge',
+        color: '#ef5350',
+      },
+      {
+        type: 'text',
+        text: error,
+        size: 'medium',
+        color: '#ffffff',
+        alignment: 'center',
+      },
+      {
+        type: 'button',
+        text: 'Go Home',
+        onPress: async () => {
           context.ui.navigateTo('/');
-        }}
-      >
-        Go Home
-      </button>
-    </vstack>
-  );
+        },
+      },
+    ],
+  };
 }
 
 /**
  * Render loading state
  */
-export function renderLoading(): JSX.Element {
-  return (
-    <vstack padding="large" gap="medium" alignment="center middle" backgroundColor="#1a1a1a">
-      <text size="xlarge" color="#26a69a">
-        Loading...
-      </text>
-      <text size="medium" color="#888888">
-        Fetching latest price data
-      </text>
-    </vstack>
-  );
+export function renderLoading(): any {
+  return {
+    type: 'vstack',
+    padding: 'large',
+    gap: 'medium',
+    alignment: 'center middle',
+    backgroundColor: '#1a1a1a',
+    children: [
+      {
+        type: 'text',
+        text: 'Loading...',
+        size: 'xlarge',
+        color: '#26a69a',
+      },
+      {
+        type: 'text',
+        text: 'Fetching latest price data',
+        size: 'medium',
+        color: '#888888',
+      },
+    ],
+  };
 }
 
 /**
