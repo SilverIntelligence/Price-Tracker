@@ -20,10 +20,12 @@ Devvit.addMenuItem({
   },
 });
 
-Devvit.addCustomPostType({
-  name: 'Price Tracker',
-  height: 'tall',
-  render: async (ctx) => PriceView(ctx, 'XAGUSD', '15m'),
+Devvit.addView({
+  name: 'reddit.posts.list',
+  render: async (ctx) => {
+    const sym = ((await ctx.settings.get('default_asset')) as string) ?? 'XAGUSD';
+    return PriceView(ctx, sym as any, '15m');
+  },
 });
 
 export default Devvit;

@@ -3,14 +3,14 @@ app:
   description: Silver & gold spot tracker with chart and engagement
 
 permissions:
-  - reddit.read
-  - reddit.posts
-  - reddit.modposts
-  - reddit.structuredstyles
-  - kv.read
-  - kv.write
-  - scheduler.write
-  - secrets.write
+  - reddit:read
+  - reddit:posts
+  - reddit:modposts
+  - reddit:structuredstyles
+  - kv:read
+  - kv:write
+  - scheduler:write
+  - secrets:write
   - network
 
 settings:
@@ -39,7 +39,3 @@ settings:
       type: string
       label: YouTube URL
       defaultValue: https://youtube.com/@wallstreetsilver
-    - key: last_daily_post_id
-      type: string
-      label: Last Daily Post ID (internal)
-      defaultValue: ""

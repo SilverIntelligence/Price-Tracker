@@ -8,7 +8,8 @@ export async function createDailyThread(ctx: Devvit.Context): Promise<string> {
     title: `Daily Metals Discussion — ${d}`,
     text: 'Discuss silver & gold markets here. Track live prices with the card above.',
   });
-  await ctx.redis.set('last_daily_post_id', post.id);
+  await post.sticky();
+  await ctx.kv.set('state', 'last_daily_post_id', post.id);
   console.log(`Created daily thread: ${post.id}`);
   return post.id;
 }

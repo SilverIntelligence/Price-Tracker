@@ -24,7 +24,7 @@ async function fetchMetalsDev(
   interval: Interval,
   ctx: Devvit.Context
 ): Promise<PriceFeed> {
-  const key = (await ctx.settings.get('METALS_DEV_KEY')) as string;
+  const key = await ctx.secrets.get('METALS_DEV_KEY');
   const base = ((await ctx.settings.get('price_api_url')) as string) ?? 'https://api.metals.dev/v1';
   const end = Math.floor(Date.now() / 1000);
   const lookback =
@@ -49,7 +49,7 @@ async function fetchMetalsAPI(
   interval: Interval,
   ctx: Devvit.Context
 ): Promise<PriceFeed> {
-  const key = (await ctx.settings.get('METALS_API_KEY')) as string;
+  const key = await ctx.secrets.get('METALS_API_KEY');
   const base = ((await ctx.settings.get('price_api_url')) as string) ?? 'https://metals-api.com';
   const now = Date.now();
   const start = new Date(now - 400 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
@@ -76,11 +76,8 @@ export async function getFeed(
 ): Promise<PriceFeed> {
   const k = `${symbol}:${interval}`;
   const now = Date.now();
-  const cached = await ctx.redis.get(k);
-  if (cached) {
-    const data = JSON.parse(cached) as { ts: number; feed: PriceFeed };
-    if (now - data.ts < FRESH_MS[interval]) return data.feed;
-  }
+  const cached = await ctx.kv.get<{ ts: number; feed: PriceFeed }>(KV_NS, k);
+  if (cached && now - cached.ts < FRESH_MS[interval]) return cached.feed;
 
   const provider = ((await ctx.settings.get('price_api')) as string) ?? 'METALS_DEV';
   const feed =
@@ -88,9 +85,7 @@ export async function getFeed(
       ? await fetchMetalsAPI(symbol, interval, ctx)
       : await fetchMetalsDev(symbol, interval, ctx);
 
-  await ctx.redis.set(k, JSON.stringify({ ts: now, feed }), {
-    expiration: new Date(now + FRESH_MS[interval] * 2),
-  });
+  await ctx.kv.set(KV_NS, k, { ts: now, feed });
   return feed;
 }
 
@@ -101,7 +96,7 @@ export async function clearCache(ctx: Devvit.Context): Promise<void> {
   for (const symbol of symbols) {
     for (const interval of intervals) {
       const key = `${symbol}:${interval}`;
-      await ctx.redis.del(key);
+      await ctx.kv.del(KV_NS, key);
     }
   }
 
