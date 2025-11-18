@@ -24,14 +24,9 @@ jobs:
       - name: Devvit auth
         env:
           DEVVIT_TOKEN: ${{ secrets.DEVVIT_TOKEN }}
-        run: devvit login --token "$DEVVIT_TOKEN"
-
-      # If your CLI supports non-interactive secrets:
-      - name: Set Metals.dev secret
-        env:
-          METALS_DEV_KEY: ${{ secrets.METALS_DEV_KEY }}
         run: |
-          devvit secrets set METALS_DEV_KEY "$METALS_DEV_KEY" || true
+          devvit login --token "$DEVVIT_TOKEN"
+          devvit whoami
 
       - name: Upload + Deploy
         run: |
