@@ -1,31 +1,39 @@
 name: Deploy Devvit App
 
 on:
-  workflow_dispatch:  # lets you trigger manually from GitHub UI
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: Install dependencies
+      - name: Install deps
         run: npm ci
 
-      - name: Deploy to Devvit
+      - name: Install Devvit CLI
+        run: npm i -g @devvit/cli@0.12.3
+
+      - name: Devvit auth
+        env:
+          DEVVIT_TOKEN: ${{ secrets.DEVVIT_TOKEN }}
+        run: devvit login --token "$DEVVIT_TOKEN"
+
+      # If your CLI supports non-interactive secrets:
+      - name: Set Metals.dev secret
         env:
           METALS_DEV_KEY: ${{ secrets.METALS_DEV_KEY }}
-          METALS_API_KEY: ${{ secrets.METALS_API_KEY }}
         run: |
-          npm install -g @devvit/cli
-          devvit login --token "${{ secrets.DEVVIT_TOKEN }}"
-          devvit secrets set METALS_DEV_KEY "$METALS_DEV_KEY"
-          devvit secrets set METALS_API_KEY "$METALS_API_KEY"
+          devvit secrets set METALS_DEV_KEY "$METALS_DEV_KEY" || true
+
+      - name: Upload + Deploy
+        run: |
           devvit upload
           devvit deploy
