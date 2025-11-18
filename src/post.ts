@@ -8,8 +8,9 @@ export async function createDailyThread(ctx: Devvit.Context): Promise<string> {
     title: `Daily Metals Discussion — ${d}`,
     text: 'Discuss silver & gold markets here. Track live prices with the card above.',
   });
-  await post.sticky();
-  await ctx.kv.set('state', 'last_daily_post_id', post.id);
+  await ctx.reddit.stickyPost({ id: post.id, num: 1 });
+  // @ts-expect-error - runtime APIs ahead of types
+  await ctx.kv.set('engage', 'last_daily_post_id', post.id);
   console.log(`Created daily thread: ${post.id}`);
   return post.id;
 }

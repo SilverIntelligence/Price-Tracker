@@ -24,6 +24,7 @@ async function fetchMetalsDev(
   interval: Interval,
   ctx: Devvit.Context
 ): Promise<PriceFeed> {
+  // @ts-expect-error - runtime APIs ahead of types
   const key = await ctx.secrets.get('METALS_DEV_KEY');
   const base = ((await ctx.settings.get('price_api_url')) as string) ?? 'https://api.metals.dev/v1';
   const end = Math.floor(Date.now() / 1000);
@@ -49,6 +50,7 @@ async function fetchMetalsAPI(
   interval: Interval,
   ctx: Devvit.Context
 ): Promise<PriceFeed> {
+  // @ts-expect-error - runtime APIs ahead of types
   const key = await ctx.secrets.get('METALS_API_KEY');
   const base = ((await ctx.settings.get('price_api_url')) as string) ?? 'https://metals-api.com';
   const now = Date.now();
@@ -76,6 +78,7 @@ export async function getFeed(
 ): Promise<PriceFeed> {
   const k = `${symbol}:${interval}`;
   const now = Date.now();
+  // @ts-expect-error - runtime APIs ahead of types
   const cached = await ctx.kv.get<{ ts: number; feed: PriceFeed }>(KV_NS, k);
   if (cached && now - cached.ts < FRESH_MS[interval]) return cached.feed;
 
@@ -85,6 +88,7 @@ export async function getFeed(
       ? await fetchMetalsAPI(symbol, interval, ctx)
       : await fetchMetalsDev(symbol, interval, ctx);
 
+  // @ts-expect-error - runtime APIs ahead of types
   await ctx.kv.set(KV_NS, k, { ts: now, feed });
   return feed;
 }
@@ -96,6 +100,7 @@ export async function clearCache(ctx: Devvit.Context): Promise<void> {
   for (const symbol of symbols) {
     for (const interval of intervals) {
       const key = `${symbol}:${interval}`;
+      // @ts-expect-error - runtime APIs ahead of types
       await ctx.kv.del(KV_NS, key);
     }
   }
