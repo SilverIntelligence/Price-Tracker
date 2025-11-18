@@ -15,6 +15,14 @@ permissions:
 
 settings:
   fields:
+    - key: METALS_DEV_KEY
+      type: string
+      label: Metals Dev API Key
+      isSecret: true
+    - key: METALS_API_KEY
+      type: string
+      label: Metals API Key (fallback)
+      isSecret: true
     - key: default_asset
       type: string
       label: Default Asset

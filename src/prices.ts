@@ -24,8 +24,7 @@ async function fetchMetalsDev(
   interval: Interval,
   ctx: Devvit.Context
 ): Promise<PriceFeed> {
-  // @ts-expect-error - runtime APIs ahead of types
-  const key = await ctx.secrets.get('METALS_DEV_KEY');
+  const key = (await ctx.settings.get('METALS_DEV_KEY')) as string;
   const base = ((await ctx.settings.get('price_api_url')) as string) ?? 'https://api.metals.dev/v1';
   const end = Math.floor(Date.now() / 1000);
   const lookback =
@@ -50,8 +49,7 @@ async function fetchMetalsAPI(
   interval: Interval,
   ctx: Devvit.Context
 ): Promise<PriceFeed> {
-  // @ts-expect-error - runtime APIs ahead of types
-  const key = await ctx.secrets.get('METALS_API_KEY');
+  const key = (await ctx.settings.get('METALS_API_KEY')) as string;
   const base = ((await ctx.settings.get('price_api_url')) as string) ?? 'https://metals-api.com';
   const now = Date.now();
   const start = new Date(now - 400 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
