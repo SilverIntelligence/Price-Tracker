@@ -1,38 +1,41 @@
-name: wss-price-tracker
-version: 0.1.0
-description: Silver/Gold price tracker with chart + menus for WallStreetSilver
+app:
+  name: pinned-price-tracker
+  description: Silver & gold spot tracker with chart and engagement
 
 permissions:
-  - reddit.read
-  - reddit.modposts
-  - reddit.modflair
-  - reddit.structuredstyles
-  - kv.write
-  - kv.read
-  - scheduler.write
-  - secrets.write
+  - reddit:read
+  - reddit:posts
+  - reddit:modposts
+  - reddit:structuredstyles
+  - kv:read
+  - kv:write
+  - scheduler:write
+  - secrets:write
   - network
 
 settings:
   fields:
     - key: default_asset
       type: string
-      label: Default Asset (XAGUSD or XAUUSD)
+      label: Default Asset
       defaultValue: XAGUSD
+    - key: price_api
+      type: string
+      label: Price API (METALS_DEV|METALS_API)
+      defaultValue: METALS_DEV
+    - key: price_api_url
+      type: string
+      label: Price API base URL
+      defaultValue: https://api.metals.dev/v1
     - key: links_discord
       type: string
       label: Discord URL
       defaultValue: https://discord.gg/wallstreetsilver
     - key: links_x
       type: string
-      label: X (Twitter) URL
+      label: X URL
       defaultValue: https://x.com/wallstreetsilv
     - key: links_youtube
       type: string
       label: YouTube URL
       defaultValue: https://youtube.com/@wallstreetsilver
-    - key: price_api_url
-      type: string
-      label: Price API Base URL
-      defaultValue: https://api.metals.dev/v1
-      helpText: Base URL for your price data provider

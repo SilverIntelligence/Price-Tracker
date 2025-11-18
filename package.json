@@ -20,11 +20,10 @@
   "author": "WallStreetSilver",
   "license": "MIT",
   "devDependencies": {
-    "@devvit/public-api": "^0.11.0",
-    "@devvit/protos": "^0.11.0",
-    "typescript": "^5.3.3"
+    "@devvit/protos": "^0.12.3",
+    "@devvit/public-api": "0.12.3",
+    "typescript": "5.5.4"
   },
-  "dependencies": {},
   "devvit": {
     "slug": "wss-price-tracker"
   }
