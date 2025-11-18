@@ -1,0 +1,31 @@
+{
+  "name": "wss-price-tracker",
+  "version": "0.1.0",
+  "description": "Silver/Gold price tracker with chart + menus for WallStreetSilver",
+  "main": "src/main.ts",
+  "scripts": {
+    "dev": "devvit playtest",
+    "build": "devvit build",
+    "upload": "devvit upload",
+    "deploy": "devvit deploy"
+  },
+  "keywords": [
+    "devvit",
+    "reddit",
+    "wallstreetsilver",
+    "silver",
+    "gold",
+    "price-tracker"
+  ],
+  "author": "WallStreetSilver",
+  "license": "MIT",
+  "devDependencies": {
+    "@devvit/public-api": "^0.11.0",
+    "@devvit/protos": "^0.11.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {},
+  "devvit": {
+    "slug": "wss-price-tracker"
+  }
+}
