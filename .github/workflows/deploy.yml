@@ -19,16 +19,19 @@ jobs:
         run: npm ci
 
       - name: Install Devvit CLI
-        run: npm i -g @devvit/cli@0.12.3
+        run: |
+          npm install -g @devvit/cli@0.12.3
+          echo "PATH=$(npm root -g)/.bin:$PATH" >> $GITHUB_ENV
 
       - name: Devvit auth
         env:
           DEVVIT_TOKEN: ${{ secrets.DEVVIT_TOKEN }}
         run: |
-          devvit login --token "$DEVVIT_TOKEN"
-          devvit whoami
+          npx devvit --version
+          npx devvit login --token "$DEVVIT_TOKEN"
+          npx devvit whoami
 
       - name: Upload + Deploy
         run: |
-          devvit upload
-          devvit deploy
+          npx devvit upload
+          npx devvit deploy
