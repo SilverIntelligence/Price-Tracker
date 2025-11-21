@@ -7,7 +7,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Setup Node
@@ -15,23 +15,23 @@ jobs:
         with:
           node-version: 22
 
-      - name: Install deps
+      - name: Install dependencies
         run: npm ci
 
       - name: Install Devvit CLI
-        run: |
-          npm install -g @devvit/cli@0.12.3
-          echo "PATH=$(npm root -g)/.bin:$PATH" >> $GITHUB_ENV
+        run: npm install -g @devvit/cli@0.12.3
 
-      - name: Devvit auth
+      - name: Configure Devvit token
         env:
           DEVVIT_TOKEN: ${{ secrets.DEVVIT_TOKEN }}
         run: |
+          mkdir -p "$HOME/.devvit"
+          printf '%s' "$DEVVIT_TOKEN" > "$HOME/.devvit/token"
+          chmod 600 "$HOME/.devvit/token"
           npx devvit --version
-          npx devvit login --token "$DEVVIT_TOKEN"
           npx devvit whoami
 
-      - name: Upload + Deploy
+      - name: Upload + Deploy App
         run: |
           npx devvit upload
           npx devvit deploy
