@@ -1,5 +1,5 @@
 app:
-  name: pinned-price-tracker
+  name: price-tracker
   description: Silver & gold spot tracker with chart and engagement
 
 permissions:
@@ -30,7 +30,7 @@ settings:
     - key: links_discord
       type: string
       label: Discord URL
-      defaultValue: https://discord.gg/wallstreetsilver
+      defaultValue: https://discord.gg/...
     - key: links_x
       type: string
       label: X URL
@@ -39,3 +39,7 @@ settings:
       type: string
       label: YouTube URL
       defaultValue: https://youtube.com/@wallstreetsilver
+    - key: METALS_DEV_KEY
+      type: string
+      label: Metals.dev API Key
+      isSecret: true
